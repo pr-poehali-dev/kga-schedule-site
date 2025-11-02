@@ -1,0 +1,24 @@
+{
+  "tests": [
+    {
+      "name": "Get all schedules",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 200,
+      "expectedBody": {
+        "0": {
+          "id": "number",
+          "subject": "string"
+        }
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Get schedules by group",
+      "method": "GET",
+      "path": "/?group_id=1",
+      "expectedStatus": 200,
+      "bodyMatcher": "partial"
+    }
+  ]
+}

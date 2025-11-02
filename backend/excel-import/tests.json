@@ -1,0 +1,14 @@
+{
+  "tests": [
+    {
+      "name": "Import schedules endpoint exists",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "file": ""
+      },
+      "expectedStatus": 400,
+      "bodyMatcher": "partial"
+    }
+  ]
+}

@@ -11,17 +11,34 @@ export default function Header() {
               <Icon name="GraduationCap" size={24} className="text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                КГА ПОУ ГАСКК МЦК
-              </h1>
+              <a 
+                href="http://gaskk-mck.ru/" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="hover:opacity-80 transition-opacity"
+              >
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                  КГА ПОУ ГАСКК МЦК
+                </h1>
+              </a>
               <p className="text-sm text-muted-foreground">Расписание занятий</p>
             </div>
           </div>
           
-          <Button variant="outline" className="gap-2">
-            <Icon name="LogOut" size={18} />
-            Выход
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              className="gap-2"
+              onClick={() => window.open('http://gaskk-mck.ru/', '_blank')}
+            >
+              <Icon name="ExternalLink" size={18} />
+              <span className="hidden sm:inline">Официальный сайт</span>
+            </Button>
+            <Button variant="outline" className="gap-2">
+              <Icon name="LogOut" size={18} />
+              <span className="hidden sm:inline">Выход</span>
+            </Button>
+          </div>
         </div>
       </div>
     </header>

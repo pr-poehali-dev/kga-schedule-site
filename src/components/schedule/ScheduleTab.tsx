@@ -2,13 +2,12 @@ import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import Icon from '@/components/ui/icon';
 import { toast } from 'sonner';
 import { Campus, Teacher, Group, Schedule } from '@/types';
 import ScheduleCard from './ScheduleCard';
+import AddScheduleDialog from './AddScheduleDialog';
+import ImportExcelDialog from './ImportExcelDialog';
 
 const DAYS = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
 
@@ -18,9 +17,10 @@ interface ScheduleTabProps {
   groups: Group[];
   teachers: Teacher[];
   campuses: Campus[];
+  onRefresh: () => void;
 }
 
-export default function ScheduleTab({ schedule, setSchedule, groups, teachers, campuses }: ScheduleTabProps) {
+export default function ScheduleTab({ schedule, setSchedule, groups, teachers, campuses, onRefresh }: ScheduleTabProps) {
   const [selectedGroup, setSelectedGroup] = useState<number | null>(1);
   const [selectedTeacher, setSelectedTeacher] = useState<number | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -51,9 +51,19 @@ export default function ScheduleTab({ schedule, setSchedule, groups, teachers, c
     return campuses.find(c => c.id === id)?.name || 'Неизвестен';
   };
 
-  const handleDeleteSchedule = (id: number) => {
-    setSchedule(schedule.filter(s => s.id !== id));
-    toast.success('Занятие удалено');
+  const handleDeleteSchedule = async (id: number) => {
+    try {
+      const response = await fetch(`https://functions.poehali.dev/952b0123-8580-45b2-850e-78aea783d07e?id=${id}`, {
+        method: 'DELETE'
+      });
+      
+      if (!response.ok) throw new Error('Failed to delete');
+      
+      setSchedule(schedule.filter(s => s.id !== id));
+      toast.success('Занятие удалено');
+    } catch (error) {
+      toast.error('Ошибка при удалении занятия');
+    }
   };
 
   const renderScheduleByDay = () => {
@@ -112,7 +122,8 @@ export default function ScheduleTab({ schedule, setSchedule, groups, teachers, c
               <CardTitle className="text-2xl">Расписание занятий</CardTitle>
               <CardDescription>Просматривайте и редактируйте расписание</CardDescription>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
+              <ImportExcelDialog onImportSuccess={onRefresh} />
               <Button 
                 variant={isEditMode ? "default" : "outline"}
                 onClick={() => setIsEditMode(!isEditMode)}
@@ -121,101 +132,12 @@ export default function ScheduleTab({ schedule, setSchedule, groups, teachers, c
                 <Icon name="Edit" size={18} />
                 {isEditMode ? 'Готово' : 'Редактировать'}
               </Button>
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button className="gap-2 bg-gradient-to-r from-primary to-secondary">
-                    <Icon name="Plus" size={18} />
-                    Добавить
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Добавить занятие</DialogTitle>
-                    <DialogDescription>
-                      Заполните информацию о новом занятии
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-4 py-4">
-                    <div className="space-y-2">
-                      <Label>Предмет</Label>
-                      <Input placeholder="Название предмета" />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label>Группа</Label>
-                        <Select>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Выберите группу" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {groups.map(g => (
-                              <SelectItem key={g.id} value={g.id.toString()}>{g.name}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Преподаватель</Label>
-                        <Select>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Выберите преподавателя" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {teachers.map(t => (
-                              <SelectItem key={t.id} value={t.id.toString()}>{t.full_name}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label>Аудитория</Label>
-                        <Input placeholder="А-101" />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Кампус</Label>
-                        <Select>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Выберите кампус" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {campuses.map(c => (
-                              <SelectItem key={c.id} value={c.id.toString()}>{c.name}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-3 gap-4">
-                      <div className="space-y-2">
-                        <Label>День недели</Label>
-                        <Select>
-                          <SelectTrigger>
-                            <SelectValue placeholder="День" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {DAYS.map((day, i) => (
-                              <SelectItem key={i} value={(i + 1).toString()}>{day}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Начало</Label>
-                        <Input type="time" />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Конец</Label>
-                        <Input type="time" />
-                      </div>
-                    </div>
-                  </div>
-                  <Button className="w-full bg-gradient-to-r from-primary to-secondary">
-                    Сохранить
-                  </Button>
-                </DialogContent>
-              </Dialog>
+              <AddScheduleDialog 
+                groups={groups}
+                teachers={teachers}
+                campuses={campuses}
+                onSuccess={onRefresh}
+              />
             </div>
           </div>
         </CardHeader>
