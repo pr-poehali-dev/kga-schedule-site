@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { Campus, Teacher, Group, Schedule } from '@/types';
 import ScheduleCard from './ScheduleCard';
 import AddScheduleDialog from './AddScheduleDialog';
+import EditScheduleDialog from './EditScheduleDialog';
 import ImportExcelDialog from './ImportExcelDialog';
 
 const DAYS = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
@@ -24,6 +25,8 @@ export default function ScheduleTab({ schedule, setSchedule, groups, teachers, c
   const [selectedGroup, setSelectedGroup] = useState<number | null>(1);
   const [selectedTeacher, setSelectedTeacher] = useState<number | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
+  const [editingSchedule, setEditingSchedule] = useState<Schedule | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   const getFilteredSchedule = () => {
     let filtered = schedule;
@@ -51,6 +54,11 @@ export default function ScheduleTab({ schedule, setSchedule, groups, teachers, c
     return campuses.find(c => c.id === id)?.name || 'Неизвестен';
   };
 
+  const handleEditSchedule = (scheduleItem: Schedule) => {
+    setEditingSchedule(scheduleItem);
+    setIsEditDialogOpen(true);
+  };
+
   const handleDeleteSchedule = async (id: number) => {
     try {
       const response = await fetch(`https://functions.poehali.dev/952b0123-8580-45b2-850e-78aea783d07e?id=${id}`, {
@@ -64,6 +72,11 @@ export default function ScheduleTab({ schedule, setSchedule, groups, teachers, c
     } catch (error) {
       toast.error('Ошибка при удалении занятия');
     }
+  };
+
+  const handleEditSuccess = () => {
+    setIsEditDialogOpen(false);
+    onRefresh();
   };
 
   const renderScheduleByDay = () => {
@@ -103,6 +116,7 @@ export default function ScheduleTab({ schedule, setSchedule, groups, teachers, c
                   getGroupName={getGroupName}
                   getCampusName={getCampusName}
                   isEditMode={isEditMode}
+                  onEdit={handleEditSchedule}
                   onDelete={handleDeleteSchedule}
                 />
               ))}
@@ -173,6 +187,16 @@ export default function ScheduleTab({ schedule, setSchedule, groups, teachers, c
       <div className="space-y-6">
         {renderScheduleByDay()}
       </div>
+
+      <EditScheduleDialog
+        schedule={editingSchedule}
+        groups={groups}
+        teachers={teachers}
+        campuses={campuses}
+        isOpen={isEditDialogOpen}
+        onClose={() => setIsEditDialogOpen(false)}
+        onSuccess={handleEditSuccess}
+      />
     </div>
   );
 }

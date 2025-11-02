@@ -10,6 +10,7 @@ interface ScheduleCardProps {
   getGroupName: (id: number) => string;
   getCampusName: (id: number) => string;
   isEditMode: boolean;
+  onEdit: (schedule: Schedule) => void;
   onDelete: (id: number) => void;
 }
 
@@ -19,6 +20,7 @@ export default function ScheduleCard({
   getGroupName,
   getCampusName,
   isEditMode,
+  onEdit,
   onDelete
 }: ScheduleCardProps) {
   return (
@@ -28,7 +30,7 @@ export default function ScheduleCard({
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">
               <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
-                {schedule.start_time} - {schedule.end_time}
+                {schedule.start_time.substring(0, 5)} - {schedule.end_time.substring(0, 5)}
               </Badge>
               <Badge variant="outline" className="bg-accent/10 text-accent border-accent/20">
                 {schedule.room}
@@ -53,7 +55,12 @@ export default function ScheduleCard({
           
           {isEditMode && (
             <div className="flex gap-2">
-              <Button variant="ghost" size="icon" className="hover:bg-primary/10">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="hover:bg-primary/10"
+                onClick={() => onEdit(schedule)}
+              >
                 <Icon name="Edit" size={18} />
               </Button>
               <Button 
